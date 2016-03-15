@@ -1,0 +1,9 @@
+{
+  "name": "requestjs",
+  "version": "1.0.0",
+  "description": "Just another XHR wrapper",
+  "author": "jophin.joseph88@gmail.com",
+  "dependencies": {
+    "es6-promise": "2.3.0"
+  }
+}
