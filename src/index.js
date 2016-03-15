@@ -1,39 +1,34 @@
-var Promise = require("./promise");
-var Commons = require("./common");
+import Promise from "es6-promise";
 
-function HTTPRequest(methodName, path) {
-    this.xhr = new XMLHttpRequest();
-    this.methodName = methodName;
-    this.path = path;
-}
-
-HTTPRequest.prototype = (function() {
-
-    var queries = function(queries) {
+class HTTPRequest {
+    constructor(methodName, path) {
+        this.xhr = new XMLHttpRequest();
+        this.methodName = methodName;
+        this.path = path;
+    }
+    queries(queries) {
         if (queries) {
-            var queryString = Commons.getQueryString(queries);
+            var queryString = HTTPRequest.getQueryString(queries);
             if(typeof queryString != "undefined" && queryString.length > 0) {
                 this.path += ("?" + queryString);
             }
         }
         return this;
-    };
-
-    var headers = function(headers) {
+    }
+    headers(headers) {
         if (headers) {
             for (var i in headers) {
                 this.xhr.setRequestHeader(i, headers[i]);
             }
         }
         return this;
-    };
-
-    var send = function(data) {
+    }
+    send(data) {
         var that = this;
         return Promise.create(function(resolve, reject) {
             that.xhr.open(that.methodName, that.path, true);
             that.xhr.onload = function(e) {
-                var response = resolveResponse(this);
+                var response = HTTPRequest.resolveResponse(this);
                 if (this.status == 200) {
                     resolve(response);
                 } else {
@@ -53,43 +48,42 @@ HTTPRequest.prototype = (function() {
                 }
                 data = formData;
             } else if(data && that.methodName == "PUT") {
-                data = Commons.getQueryString(data);
+                data = HTTPRequest.getQueryString(data);
             } else {
                 data = null;
             }
             that.xhr.send(data);
         });
-    };
-
-    return {
-        send: send,
-        headers: headers,
-        queries: queries
-    };
-
-})();
-
-function resolveResponse(xhr) {
-    var contentType = xhr.getResponseHeader("Content-Type");
-    var response = xhr.response;
-    if (contentType == "application/json") {
-        return JSON.parse(response);
-    } else {
-        return response;
+    }
+    static resolveResponse(xhr) {
+        var contentType = xhr.getResponseHeader("Content-Type");
+        var response = xhr.response;
+        if (contentType == "application/json") {
+            return JSON.parse(response);
+        } else {
+            return response;
+        }
+    }
+    static getQueryString(queries) {
+        var queryString = "";
+        for (var i in queries) {
+            queryString += (i + "=" + queries[i] + "&");
+        }
+        return queryString.replace(/&$/, "");
     }
 }
 
-module.exports = {
-    "get": function(path) {
+export default {
+    get(path) {
         return new HTTPRequest("GET", path);
     },
-    "post": function(path) {
+    post(path) {
         return new HTTPRequest("POST", path);
     },
-    "put": function(path) {
+    put(path) {
         return new HTTPRequest("PUT", path);
     },
-    "delete": function(path) {
+    delete(path) {
         return new HTTPRequest("DELETE", path);
     }
-};
+}
