@@ -4,7 +4,8 @@ var path = require('path');
 
 module.exports = {
     entry: {
-        request: "./src/index.js"
+        request: "./src/index.js",
+        test: "./tests/test.js"
     },
 
     output: {
@@ -16,7 +17,15 @@ module.exports = {
         loaders: [{
             test: /\.js$/,
             loader: 'es6-loader!babel-loader',
-            exclude: /node_modules/
+            include: [
+                path.resolve(__dirname, 'src/')
+            ]
+        }, {
+            test: /\.js$/,
+            loader: 'babel-loader!mocha-loader',
+            include: [
+                path.resolve(__dirname, 'tests/')
+            ]
         }]
     },
 
@@ -25,5 +34,4 @@ module.exports = {
             title: 'Webpack'
         })
     ]
-
 };
