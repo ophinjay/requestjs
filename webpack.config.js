@@ -2,12 +2,18 @@
 var WebpackNotifierPlugin = require('webpack-notifier');
 var path = require('path');
 
+function getEntryPoint() {
+    if (process.env.ENTRY == 'test') {
+        return {};
+    } else {
+        return {
+            request: "./src/request.js"
+        };
+    }
+}
 module.exports = {
-    entry: {
-        request: "./src/index.js",
-        test: "./tests/test.js"
-    },
-
+    entry: getEntryPoint(),
+    devtool: 'source-map',
     output: {
         path: "./dist",
         filename: '[name].js'
@@ -15,17 +21,9 @@ module.exports = {
 
     module: {
         loaders: [{
-            test: /\.js$/,
+            test: /\.js/,
             loader: 'es6-loader!babel-loader',
-            include: [
-                path.resolve(__dirname, 'src/')
-            ]
-        }, {
-            test: /\.js$/,
-            loader: 'babel-loader!mocha-loader',
-            include: [
-                path.resolve(__dirname, 'tests/')
-            ]
+            exclude: /node_modules/
         }]
     },
 

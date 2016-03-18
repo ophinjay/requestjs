@@ -1,4 +1,9 @@
-import Promise from "es6-promise";
+import { Promise } from "es6-promise";
+
+const REQUEST_TYPES = {
+    'json': 'application/json',
+    'url': 'application/x-www-form-urlencoded'
+};
 
 class HTTPRequest {
     constructor(methodName, path) {
@@ -6,10 +11,14 @@ class HTTPRequest {
         this.methodName = methodName;
         this.path = path;
     }
+    requestType(type) {
+        this.type = type;
+        return this;
+    }
     queries(queries) {
         if (queries) {
             var queryString = HTTPRequest.getQueryString(queries);
-            if(typeof queryString != "undefined" && queryString.length > 0) {
+            if (typeof queryString != "undefined" && queryString.length > 0) {
                 this.path += ("?" + queryString);
             }
         }
@@ -25,7 +34,7 @@ class HTTPRequest {
     }
     send(data) {
         var that = this;
-        return Promise.create(function(resolve, reject) {
+        return new Promise(function(resolve, reject) {
             that.xhr.open(that.methodName, that.path, true);
             that.xhr.onload = function(e) {
                 var response = HTTPRequest.resolveResponse(this);
@@ -41,24 +50,40 @@ class HTTPRequest {
             that.xhr.onerror = function(e) {
                 reject(e.target.status);
             };
-            if (data && that.methodName == "POST") {
-                var formData = new FormData();
-                for (var i in data) {
-                    formData.append(i, data[i]);
+            if(data) {
+                var type = "";
+                if(that.type) {
+                    type = that.type;
+                } else if(that.methodName == "POST" || that.methodName == "PUT") {
+                    type = 'url';
                 }
-                data = formData;
-            } else if(data && that.methodName == "PUT") {
-                data = HTTPRequest.getQueryString(data);
-            } else {
-                data = null;
+                data = HTTPRequest.getRequest(data, type);
+            }
+            if(that.type && REQUEST_TYPES[that.type]) {
+                that.xhr.setRequestHeader('Content-Type', REQUEST_TYPES[that.type]);
             }
             that.xhr.send(data);
         });
     }
+    static getRequest(data, type) {
+        if (type == 'url') {
+            return HTTPRequest.getQueryString(data);
+        } else if (type == 'formdata') {
+            var formData = new FormData();
+            for (var i in data) {
+                formData.append(i, data[i]);
+            }
+            return formData;
+        } else if (type == 'json') {
+            return JSON.stringify(data);
+        } else {
+            return data;
+        }
+    }
     static resolveResponse(xhr) {
         var contentType = xhr.getResponseHeader("Content-Type");
         var response = xhr.response;
-        if (contentType == "application/json") {
+        if (/application\/json/.test(contentType)) {
             return JSON.parse(response);
         } else {
             return response;
@@ -75,15 +100,15 @@ class HTTPRequest {
 
 export default {
     get(path) {
-        return new HTTPRequest("GET", path);
-    },
-    post(path) {
-        return new HTTPRequest("POST", path);
-    },
-    put(path) {
-        return new HTTPRequest("PUT", path);
-    },
-    delete(path) {
-        return new HTTPRequest("DELETE", path);
-    }
-}
+            return new HTTPRequest("GET", path);
+        },
+        post(path) {
+            return new HTTPRequest("POST", path);
+        },
+        put(path) {
+            return new HTTPRequest("PUT", path);
+        },
+        delete(path) {
+            return new HTTPRequest("DELETE", path);
+        }
+};
