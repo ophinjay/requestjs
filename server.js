@@ -33,6 +33,12 @@ app.get('*', function(req, res, next) {
     }
 });
 
+app.post('/headers', function (req, res, next) {
+	res.status(200).send({
+		header: Number(req.headers.header)
+	});
+});
+
 app.post('*', function (req, res, next) {
 	res.status(200).send({
 		num: req.body.num * 13

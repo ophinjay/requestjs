@@ -10,6 +10,7 @@ class HTTPRequest {
         this.xhr = new XMLHttpRequest();
         this.methodName = methodName;
         this.path = path;
+        this.heads = {};
     }
     requestType(type) {
         this.type = type;
@@ -27,7 +28,7 @@ class HTTPRequest {
     headers(headers) {
         if (headers) {
             for (var i in headers) {
-                this.xhr.setRequestHeader(i, headers[i]);
+                this.heads[i] = headers[i];
             }
         }
         return this;
@@ -36,6 +37,9 @@ class HTTPRequest {
         var that = this;
         return new Promise(function(resolve, reject) {
             that.xhr.open(that.methodName, that.path, true);
+            for (var i in that.heads) {
+                that.xhr.setRequestHeader(i, that.heads[i]);
+            }
             that.xhr.onload = function(e) {
                 var response = HTTPRequest.resolveResponse(this);
                 if (this.status == 200) {
@@ -50,16 +54,16 @@ class HTTPRequest {
             that.xhr.onerror = function(e) {
                 reject(e.target.status);
             };
-            if(data) {
+            if (data) {
                 var type = "";
-                if(that.type) {
+                if (that.type) {
                     type = that.type;
-                } else if(that.methodName == "POST" || that.methodName == "PUT") {
+                } else if (that.methodName == "POST" || that.methodName == "PUT") {
                     type = 'url';
                 }
                 data = HTTPRequest.getRequest(data, type);
             }
-            if(that.type && REQUEST_TYPES[that.type]) {
+            if (that.type && REQUEST_TYPES[that.type]) {
                 that.xhr.setRequestHeader('Content-Type', REQUEST_TYPES[that.type]);
             }
             that.xhr.send(data);

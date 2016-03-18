@@ -62,6 +62,14 @@ describe('POST', function() {
                 done();
             }).catch(errorHandler.bind(done));
         });
-
+    });
+    it('should return header', function(done) {
+    	var headers = {
+    		header: 10
+    	};
+        request.post("/headers").headers(headers).send().then(function(data) {
+            expect(data).to.deep.equal(headers);
+            done();
+        }).catch(errorHandler.bind(done));
     });
 });
