@@ -35,7 +35,7 @@ class HTTPRequest {
     }
     send(data) {
         var that = this;
-        return new Promise(function(resolve, reject) {
+        return new Promise((resolve, reject) => {
             that.xhr.open(that.methodName, that.path, true);
             for (var i in that.heads) {
                 that.xhr.setRequestHeader(i, that.heads[i]);
@@ -63,8 +63,8 @@ class HTTPRequest {
                 }
                 data = HTTPRequest.getRequest(data, type);
             }
-            if (that.type && REQUEST_TYPES[that.type]) {
-                that.xhr.setRequestHeader('Content-Type', REQUEST_TYPES[that.type]);
+            if (type && REQUEST_TYPES[type]) {
+                that.xhr.setRequestHeader('Content-Type', REQUEST_TYPES[type]);
             }
             that.xhr.send(data);
         });

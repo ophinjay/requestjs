@@ -3,6 +3,7 @@ var app = express();
 var http = require('http');
 var path = require('path');
 var bodyParser = require('body-parser');
+var Utils = require('./server/utils');
 
 var port = process.env.NODE_PORT || 20202;
 var responses = require('./server/responses');
@@ -35,8 +36,15 @@ app.get('*', function(req, res, next) {
 
 app.post('/headers', function (req, res, next) {
 	res.status(200).send({
-		header: Number(req.headers.header)
+		header: req.headers.header
 	});
+});
+
+app.post('/collate', function (req, res, next) {
+	var result = Utils.assign({
+		header: req.headers.header
+	}, req.body, req.query);
+	res.status(200).send(result);
 });
 
 app.post('*', function (req, res, next) {
